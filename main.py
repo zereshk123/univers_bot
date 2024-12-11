@@ -41,9 +41,8 @@ def auth_db():
 
 app = None
 
-token = "8044339469:AAECxqg0nZBdOrY_1IVVrBH4zmRdV5JbIZU"
+token = "7912396951:AAG9lQsNCAuLNB74T_ilKhC1rzC_PAfmFuU"
 link_web_app = "https://alikakaee.ir/bot/"
-waiting_for_message = {}
 admin_creation_state = {}
 admin_edit_homework_state = {}
 admin_del_state = {}
@@ -368,8 +367,38 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = str(update.effective_user.id)
     text = str(update.effective_message.text)
 
+    if text == "لغو" or text == "کنسل":
+        if user_id in admin_creation_state:
+            del admin_creation_state[user_id]
+
+        if user_id in admin_edit_homework_state:
+            del admin_edit_homework_state[user_id]
+
+        if user_id in admin_del_state:
+            del admin_del_state[user_id]
+
+        if user_id in user_status:
+            del user_status[user_id]
+
+        if user_id in reminder_state:
+            del reminder_state[user_id]
+
+        inline_keyboard=([
+            [InlineKeyboardButton("🔙 برگشتن", callback_data="back")]
+        ])
+        inline_markup = InlineKeyboardMarkup(inline_keyboard)
+
+        await context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="عملیات های شما با موفقیت لغو شد✅",
+            reply_markup=inline_markup,
+            reply_to_message_id=update.effective_message.id
+        )
+
+        return
+
     #__ فرآیند ذخیره کردن یادآوری  __
-    if user_id in reminder_state:
+    elif user_id in reminder_state:
 
         inline_keyboard = [[InlineKeyboardButton("🔙 برگشتن", callback_data="back")]]
         inline_markup = InlineKeyboardMarkup(inline_keyboard)
@@ -421,7 +450,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
     #__ فرآیند پشتیبانی  __
-    if user_id in user_status:
+    elif user_id in user_status:
         start = user_status[user_id]
 
         if start["step"] == True:
@@ -457,7 +486,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     #__ فرآیند حذف ادمین  __
-    if user_id in admin_del_state:
+    elif user_id in admin_del_state:
         start = admin_del_state[user_id]
 
         if start["step"] == True:
@@ -497,7 +526,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     #__ فرآیند ادیت تکالیف __
-    if user_id in admin_edit_homework_state:
+    elif user_id in admin_edit_homework_state:
         start = admin_edit_homework_state[user_id]
 
         if start["step"] == True:
@@ -534,7 +563,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     #__ فرآیند افزودن ادمین  __
-    if user_id in admin_creation_state:
+    elif user_id in admin_creation_state:
         state = admin_creation_state[user_id]
 
        #__ مرحله 1 __
@@ -586,22 +615,9 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # پاک کردن وضعیت کاربر از دیکشنری
             del admin_creation_state[user_id]
             return
-
-    if waiting_for_message.get(user_id, False):
-        with sqlite3.connect('data.db') as connection:
-            cursor = connection.cursor()
-            new_message = update.effective_message.text
-            cursor.execute('UPDATE message SET message = ? WHERE id = 1', (new_message,))
-            connection.commit()
-        waiting_for_message[user_id] = False
-
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text="پیامت با موفقیت ذخیره شد✅",
-            reply_to_message_id=update.effective_message.id
-        )
-
-    if text == "ببعی" or text == "مهندس":
+ 
+    #__ فرآیند صدا زدن  __
+    elif text == "ببعی" or text == "مهندس":
         random_num = random.randint(0, 2)
         
         inline_keyboard = [
@@ -624,136 +640,19 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_to_message_id=update.effective_message.id,
                 reply_markup=inline_markup
             )
-            
 
     else:
         None
-        
-        # inline_keyboard = [
-        #     [InlineKeyboardButton("🔙 برگشتن", callback_data="back")]
-        # ]
-        # inline_markup = InlineKeyboardMarkup(inline_keyboard)
-
-        # await context.bot.send_message(
-        #     chat_id=update.effective_chat.id,
-        #     text="چی میگی نمیفهمم😶\nمن این چیزا سرم نمیشه با دستوراتی بهت دادم میتونی با من حرف بزنی😁",
-        #     reply_to_message_id=update.effective_message.id,
-        #     reply_markup=inline_markup
-        # )
-
-
-
-# async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     await context.bot.send_message(
-#         chat_id=update.effective_chat.id,
-#         text="این بخش فعلاً در دسترس نیست.",
-#         reply_to_message_id=update.effective_message.id
-#     )
-
-
-# async def addadmin(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     user_id = str(update.effective_user.id)
-#     with sqlite3.connect('data.db') as connection:
-#         cursor = connection.cursor()
-#         cursor.execute('SELECT user_id FROM admins WHERE user_id = ?', (user_id,))
-#         is_admin = cursor.fetchone()
-
-#         if is_admin:  # کاربر مجاز است
-#             args = context.args
-            
-#             if len(args) >= 2:
-#                 new_user_id, new_user_name = args[0], " ".join(args[1:])
-
-#                 try:
-#                     cursor.execute('INSERT INTO admins (user_id, name) VALUES (?, ?)', (new_user_id, new_user_name))
-#                     await context.bot.send_message(
-#                         chat_id=update.effective_chat.id,
-#                         text=f"ادمین جدید با اسم {new_user_name} و آیدی {new_user_id} به لیست ادمین های ربات اضافه شد✅\nبا دستور /showadmins میتونی اسم تمام ادمین هارو ببینی😀",
-#                         reply_to_message_id=update.effective_message.id
-#                     )
-
-#                 except sqlite3.IntegrityError:
-#                     await context.bot.send_message(
-#                         chat_id=update.effective_chat.id,
-#                         text=f"کاربری با یوزر آیدی {new_user_id} قبلا اضافه شده!😬",
-#                         reply_to_message_id=update.effective_message.id
-#                     )
-#             else:
-#                 await context.bot.send_message(
-#                     chat_id=update.effective_chat.id,
-#                     text="فرمت دستور درست نیست!\nباید به این صورت بنویسی⬇\n/addadmin [user-id] [name-admin]",
-#                     reply_to_message_id=update.effective_message.id
-
-#                 )
-
-#         else:
-#             await context.bot.send_message(
-#                 chat_id=update.effective_chat.id,
-#                 text="فضولیت گل کرده ها😂\nاین دستورا برا بزرگتراس تو فقط میتونی با دستوراتی که توی /help بهت گفتم کار کنی😁",
-#                 reply_to_message_id=update.effective_message.id
-#             )
-
-
-# async def showadmins(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     user_id = str(update.effective_user.id)
-#     with sqlite3.connect('data.db') as connection:
-#         cursor = connection.cursor()
-#         cursor.execute('SELECT user_id FROM admins WHERE user_id = ?', (user_id,))
-#         is_admin = cursor.fetchone()
-
-#         if is_admin:
-#             cursor.execute('SELECT user_id, name FROM admins')
-#             admins = cursor.fetchall()
-            
-#             if admins:
-#                 message = "لیست ادمین‌ها:\n\n" + "\n".join(
-#                     [f"{idx + 1}. {name} (USER-ID: {admin_id})" for idx, (admin_id, name) in enumerate(admins)]
-#                 )
-#             else:
-#                 message = "چیز عجیبیه ولی ادمینی وجود نداره🤔"
-
-#             await context.bot.send_message(
-#                 chat_id=update.effective_chat.id,
-#                 text=message,
-#                 reply_to_message_id=update.effective_message.id
-#             )
-
-#         else:
-#             await context.bot.send_message(
-#                 chat_id=update.effective_chat.id,
-#                 text="فضولیت گل کرده ها😂\nاین دستورا برا بزرگتراس تو فقط میتونی با دستوراتی که توی /help بهت گفتم کار کنی😁",
-#                 reply_to_message_id=update.effective_message.id
-#             )
-
-
-# async def edit(update: Update, context: ContextTypes.DEFAULT_TYPE):
-#     user_id = str(update.effective_user.id)
-#     with sqlite3.connect('data.db') as connection:
-#         cursor = connection.cursor()
-#         cursor.execute('SELECT user_id FROM admins WHERE user_id = ?', (user_id,))
-#         is_admin = cursor.fetchone()
-
-#         if is_admin:
-#             waiting_for_message[user_id] = True
-#             await update.message.reply_text("لطفاً پیامی که می‌خواهید تنظیم شود را ارسال کنید.")
-#         else:
-#             await context.bot.send_message(
-#                 chat_id=update.effective_chat.id,
-#                 text="شما دسترسی به این بخش ندارید."
-#             )
+ 
 
 
 # --- راه‌اندازی ---
 async def run_telegram_bot():
     print("Telegram bot is initializing...")
-    global app  # استفاده از متغیر گلوبال
+    global app
     app = Application.builder().token(token).build()
     app.add_handler(CallbackQueryHandler(button_handler))
     app.add_handler(CommandHandler('start', start))
-    # app.add_handler(CommandHandler('help', help))
-    # app.add_handler(CommandHandler('addadmin', addadmin))
-    # app.add_handler(CommandHandler('showadmins', showadmins))
-    # app.add_handler(CommandHandler('edit', edit))
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), echo))
 
     print("Telegram bot is starting polling...")
