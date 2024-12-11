@@ -41,7 +41,7 @@ def auth_db():
 
 app = None
 
-token = "7912396951:AAG9lQsNCAuLNB74T_ilKhC1rzC_PAfmFuU"
+token = "8044339469:AAECxqg0nZBdOrY_1IVVrBH4zmRdV5JbIZU"
 link_web_app = "https://alikakaee.ir/bot/"
 admin_creation_state = {}
 admin_edit_homework_state = {}
