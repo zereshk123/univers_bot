@@ -222,7 +222,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             admin_creation_state[user_id] = {"step": True}
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text="🔶 اسم ادمین جدید رو چی بزارم؟"
+                text="🔶 اسم ادمین جدید رو چی بزارم؟\nبا ارسال 'لغو' یا 'کنسل' میتونی دستور رو لغو کنی✅"
             )
         
         else:
@@ -250,7 +250,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             admin_del_state[user_id] = {"step": 1}
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
-                text="🔶 یوزر آیدی ادمین مورد نظر رو وارد کن:"
+                text="🔶 یوزر آیدی ادمین مورد نظر رو وارد کن:\nبا ارسال 'لغو' یا 'کنسل' میتونی دستور رو لغو کنی✅"
             )
         
         else:
@@ -307,7 +307,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 admin_edit_homework_state[user_id] = {"step": True}
                 await context.bot.send_message(
                     chat_id=update.effective_chat.id,
-                    text="🔶 متن تکالیف هارو بفرست:"
+                    text="🔶 متن تکالیف هارو بفرست:\nبا ارسال 'لغو' یا 'کنسل' میتونی دستور رو لغو کنی✅"
                 )
             
             else:
@@ -323,7 +323,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif query.data == "talk_admins":
         user_id = str(update.effective_user.id)
         user_status[user_id] = {"step": True}
-        await query.edit_message_text("هرچی میخوای بنویس من میفرستم برا ادمین😁:")
+        await query.edit_message_text("هرچی میخوای بنویس من میفرستم برا ادمین😁:\nبا ارسال 'لغو' یا 'کنسل' میتونی دستور رو لغو کنی✅")
 
     elif query.data == "set_reminder":
         user_id = str(update.effective_user.id)
@@ -497,33 +497,45 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ]
             inline_markup = InlineKeyboardMarkup(inline_keyboard)
 
-            with sqlite3.connect('data.db') as connection:
-                cursor = connection.cursor()
-                try:
-                    cursor.execute(
-                        'DELETE FROM admins WHERE user_id = ?',
-                        (admin_del_state[user_id]["del_user_id"],)
-                    )
-                    connection.commit()
+            if isinstance(admin_del_state[user_id]["del_user_id"], int) and admin_del_state[user_id]["del_user_id"] > 0:
+                with sqlite3.connect('data.db') as connection:
+                    cursor = connection.cursor()
+                    try:
+                        cursor.execute(
+                            'DELETE FROM admins WHERE user_id = ?',
+                            (admin_del_state[user_id]["del_user_id"],)
+                        )
+                        connection.commit()
 
-                    await context.bot.send_message(
-                        chat_id=update.effective_chat.id,
-                        text=f"ادمین با یوزر آیدی {admin_del_state[user_id]['del_user_id']} با موفقیت حذف شد✅",
-                        reply_to_message_id=update.effective_message.id,
-                        reply_markup=inline_markup
-                    )
+                        await context.bot.send_message(
+                            chat_id=update.effective_chat.id,
+                            text=f"ادمین با یوزر آیدی {admin_del_state[user_id]['del_user_id']} با موفقیت حذف شد✅",
+                            reply_to_message_id=update.effective_message.id,
+                            reply_markup=inline_markup
+                        )
 
-                except sqlite3.IntegrityError:
-                    await context.bot.send_message(
-                        chat_id=update.effective_chat.id,
-                        text=f"ادمین با یوزر آیدی {admin_del_state[user_id]['del_user_id']} وجود ندارد!! 😬",
-                        reply_to_message_id=update.effective_message.id,
-                        reply_markup=inline_markup
-                    )
-                    
-        # پاک کردن وضعیت کاربر از دیکشنری
-        del admin_del_state[user_id]
-        return
+                    except sqlite3.IntegrityError:
+                        await context.bot.send_message(
+                            chat_id=update.effective_chat.id,
+                            text=f"ادمین با یوزر آیدی {admin_del_state[user_id]['del_user_id']} وجود ندارد!! 😬",
+                            reply_to_message_id=update.effective_message.id,
+                            reply_markup=inline_markup
+                        )
+                        
+            # پاک کردن وضعیت کاربر از دیکشنری
+            del admin_del_state[user_id]
+            return
+        
+        else:
+            await context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text=f"یوزر آیدی وارد شده اشتباهه!!\nدستور شما لغو شد...",
+                reply_to_message_id=update.effective_message.id,
+                reply_markup=inline_markup
+            )
+
+            del admin_del_state[user_id]
+            return
 
     #__ فرآیند ادیت تکالیف __
     elif user_id in admin_edit_homework_state:
@@ -553,7 +565,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 except sqlite3.IntegrityError:
                     await context.bot.send_message(
                         chat_id=update.effective_chat.id,
-                        text=f"یه مشکلی وجود داره باید کد هام بررسی بشه🤕\nبابا ببین چم شده @mheydari006🤒",
+                        text=f"یه مشکلی وجود داره باید کد هام بررسی بشه🤕\n@mheydari006🤒",
                         reply_to_message_id=update.effective_message.id,
                         reply_markup=inline_markup
                     )
@@ -588,33 +600,42 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ])
             inline_markup = InlineKeyboardMarkup(inline_keyboard)
 
-            with sqlite3.connect('data.db') as connection:
-                cursor = connection.cursor()
-                try:
-                    cursor.execute(
-                        'INSERT INTO admins (user_id, name) VALUES (?, ?)',
-                        (admin_creation_state[user_id]["user_id"], admin_creation_state[user_id]["name"])
-                    )
-                    connection.commit()
+            if isinstance(admin_del_state[user_id]["del_user_id"], int) and admin_del_state[user_id]["del_user_id"] > 0:
+                with sqlite3.connect('data.db') as connection:
+                    cursor = connection.cursor()
+                    try:
+                        cursor.execute(
+                            'INSERT INTO admins (user_id, name) VALUES (?, ?)',
+                            (admin_creation_state[user_id]["user_id"], admin_creation_state[user_id]["name"])
+                        )
+                        connection.commit()
 
-                    await context.bot.send_message(
-                        chat_id=update.effective_chat.id,
-                        text=f"ادمین با نام '{admin_creation_state[user_id]['name']}' و یوزر آیدی '{admin_creation_state[user_id]['user_id']}' ذخیره شد ✅",
-                        reply_to_message_id=update.effective_message.id,
-                        reply_markup=inline_markup
-                    )
+                        await context.bot.send_message(
+                            chat_id=update.effective_chat.id,
+                            text=f"ادمین با نام '{admin_creation_state[user_id]['name']}' و یوزر آیدی '{admin_creation_state[user_id]['user_id']}' ذخیره شد ✅",
+                            reply_to_message_id=update.effective_message.id,
+                            reply_markup=inline_markup
+                        )
 
-                except sqlite3.IntegrityError:
-                    await context.bot.send_message(
-                        chat_id=update.effective_chat.id,
-                        text="این یوزر آیدی از قبل ادمین بوده!!😬",
-                        reply_to_message_id=update.effective_message.id,
-                        reply_markup=inline_markup
-                    )
+                    except sqlite3.IntegrityError:
+                        await context.bot.send_message(
+                            chat_id=update.effective_chat.id,
+                            text="این یوزر آیدی از قبل ادمین بوده!!😬",
+                            reply_to_message_id=update.effective_message.id,
+                            reply_markup=inline_markup
+                        )
 
-            # پاک کردن وضعیت کاربر از دیکشنری
-            del admin_creation_state[user_id]
-            return
+                # پاک کردن وضعیت کاربر از دیکشنری
+                del admin_creation_state[user_id]
+                return
+            
+            else:
+                await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text=f"یوزر آیدی وارد شده اشتباهه!!\nدستور شما لغو شد...",
+                    reply_to_message_id=update.effective_message.id,
+                    reply_markup=inline_markup
+                )
  
     #__ فرآیند صدا زدن  __
     elif text == "ببعی" or text == "مهندس":
@@ -631,9 +652,6 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             anwser = cursor.fetchall()
             anwser_txt = "\n".join([row[0] for row in anwser])
             
-
-            decoded_text = bytes(anwser_txt[0], 'utf-8').decode('unicode_escape')
-
             await context.bot.send_message(
                 chat_id=update.effective_chat.id,
                 text=anwser_txt,
