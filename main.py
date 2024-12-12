@@ -41,7 +41,7 @@ def auth_db():
 
 app = None
 
-token = "8044339469:AAECxqg0nZBdOrY_1IVVrBH4zmRdV5JbIZU"
+token = "7912396951:AAG9lQsNCAuLNB74T_ilKhC1rzC_PAfmFuU"
 link_web_app = "https://alikakaee.ir/bot/"
 admin_creation_state = {}
 admin_edit_homework_state = {}
@@ -522,20 +522,20 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             reply_markup=inline_markup
                         )
                         
-            # پاک کردن وضعیت کاربر از دیکشنری
-            del admin_del_state[user_id]
-            return
-        
-        else:
-            await context.bot.send_message(
-                chat_id=update.effective_chat.id,
-                text=f"یوزر آیدی وارد شده اشتباهه!!\nدستور شما لغو شد...",
-                reply_to_message_id=update.effective_message.id,
-                reply_markup=inline_markup
-            )
+                # پاک کردن وضعیت کاربر از دیکشنری
+                del admin_del_state[user_id]
+                return
+            
+            else:
+                await context.bot.send_message(
+                    chat_id=update.effective_chat.id,
+                    text="🔴یوزر آیدی وارد شده اشتباهه!!!\nدستور شما لغو شد...",
+                    reply_to_message_id=update.effective_message.id,
+                    reply_markup=inline_markup
+                )
 
-            del admin_del_state[user_id]
-            return
+                del admin_del_state[user_id]
+                return
 
     #__ فرآیند ادیت تکالیف __
     elif user_id in admin_edit_homework_state:
@@ -600,7 +600,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ])
             inline_markup = InlineKeyboardMarkup(inline_keyboard)
 
-            if isinstance(admin_del_state[user_id]["del_user_id"], int) and admin_del_state[user_id]["del_user_id"] > 0:
+            if isinstance(admin_creation_state[user_id]["user_id"], int) and admin_creation_state[user_id]["user_id"] > 0:
                 with sqlite3.connect('data.db') as connection:
                     cursor = connection.cursor()
                     try:
@@ -632,7 +632,7 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
                 await context.bot.send_message(
                     chat_id=update.effective_chat.id,
-                    text=f"یوزر آیدی وارد شده اشتباهه!!\nدستور شما لغو شد...",
+                    text=f"🔴یوزر آیدی وارد شده اشتباهه!!!\nدستور شما لغو شد...",
                     reply_to_message_id=update.effective_message.id,
                     reply_markup=inline_markup
                 )
